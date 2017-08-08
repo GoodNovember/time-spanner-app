@@ -5,5 +5,8 @@
   "private": true,
   "repository": "git@github.com:GoodNovember/time-spanner-app.git",
   "author": "Victor Lawrence <victorlawrencecode@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "angular": "1.6.5"
+  }
 }
