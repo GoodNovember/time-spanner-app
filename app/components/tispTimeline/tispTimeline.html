@@ -1,0 +1,18 @@
+<div class="tispTimeline">
+	<tisp-canvas 
+		class="cvs" 
+		bind-ctx="$ctrl.ctxBinder(ctx)" 
+		ctx-type="2d" 
+		ng-mousemove="$ctrl.mouseMove($event)"
+		ng-mousedown="$ctrl.mouseDown($event)"
+		ng-mouseup="$ctrl.mouseUp($event)"
+		ng-mouseenter="$ctrl.mouseEnter($event)"
+		ng-mouseleave="$ctrl.mouseLeave($event)"
+		ng-touchstart="$ctrl.touchStart($event)"
+		ng-touchmove= "$ctrl.touchMove($event)"
+		ng-touchend=  "$ctrl.touchEnd($ctrl)"
+		></tisp-canvas>
+	<div class="debug">
+		<pre>{{$ctrl|json}}</pre>
+	</div>
+</div>
