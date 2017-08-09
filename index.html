@@ -5,8 +5,18 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>Time Spanner</title>
+	<link rel="stylesheet" href="./app/components/tispTimeline/tispTimeline.css">
+	<link rel="stylesheet" href="./app/components/tispCanvas/tispCanvas.css">
+	<link rel="stylesheet" href="./app/app.css">
 </head>
-<body>
-	
+<body ng-app="app">
+	<tisp-root></tisp-root>
+	<script src="./node_modules/angular/angular.js"></script>
+	<script src="./node_modules/angular-touch/angular-touch.js"></script>
+	<script src="./app/app.module.js"></script>
+	<script src="./app/components/timeline.factory.js"></script>
+	<script src="./app/components/tispRoot/tispRoot.component.js"></script>
+	<script src="./app/components/tispCanvas/tispCanvas.component.js"></script>
+	<script src="./app/components/tispTimeline/tispTimeline.component.js"></script>
 </body>
 </html>

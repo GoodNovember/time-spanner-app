@@ -7,6 +7,7 @@
   "author": "Victor Lawrence <victorlawrencecode@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "angular": "1.6.5"
+    "angular": "1.6.5",
+    "angular-touch": "1.6.5"
   }
 }
