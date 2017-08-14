@@ -8,8 +8,6 @@
 	Service.inject = ['$q'];
 	function Service($q) {
 
-		var DPR = window.devicePixelRatio || 1;
-
 		var SPEED = .5;
 
 		var ANIMATIONS = []
@@ -70,6 +68,10 @@
 			REGIONS.map(function(region){ 
 				var color = "black"
 
+				// if(LOCAL_STATE.mousePoint.isInRegion(region.name) && MOVE.mouseButtons.any){
+				// 	color = "red"
+				// }
+
 				if(region.isPointInRegion(LOCAL_STATE.activePoint)){
 					color = "red"
 				}else if (region.isPointInRegion(LOCAL_STATE.touchPoint) && MOVE.isTouching){
@@ -113,6 +115,8 @@
 		function Region(name, topLeftPoint, bottomRightPoint){
 			var self = this;
 
+			self.name = name;
+
 			var minX = topLeftPoint.x
 			var maxX = bottomRightPoint.x
 
@@ -150,6 +154,25 @@
 			self.clone = function(){
 				return new Point(this.x, this.y)
 			}
+
+			self.isInRegion = function(regionName){
+				const askedForRegion = getRegionByName(regionName)
+				// console.log("REGION:", regionName, askedForRegion)
+				if(askedForRegion && askedForRegion.isPointInRegion(self.clone())){
+					return true
+				}else{
+					return false
+				}
+			}
+		}
+
+		function getRegionByName(regionName){
+			return REGIONS.reduce(function(acc, region){
+				if(region.name === regionName && acc === null){
+					acc = region
+				}
+				return acc
+			},null)
 		}
 
 		function drawSimplePath(ctx, pointArray, color){
@@ -180,6 +203,10 @@
 			return function(progress){
 				return (fromValue * (1.0 - progress)) + (toValue * progress)
 			}
+		}
+
+		function getDPR(){
+			return window.devicePixelRatio || 1
 		}
 
 		function createRegion(name, topLeftPoint, bottomRightPoint){
