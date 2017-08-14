@@ -9,6 +9,7 @@
 	border: 1px solid black;
 	width: 50%;
 	overflow: scroll;
+	user-select: none;
 }
 
 .tispTimeline .cvs{
