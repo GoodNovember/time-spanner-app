@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>scratchpad</title>
+</head>
+<body>
+	<div id="thingy">Make Mouse Target Element</div>
+	<script src="./buttonParser.js"></script>
+	<script>
+
+		var state = {}
+
+		// call them what you like, but they must be in this order:
+		var allPossibleButtons = ["left", "right", "middle", "fourth", "fifth"] 
+
+		var buttonsICareAbout = ["Left", "RIGHT", "middle"] 
+		// notice, how you spell them here, matches how they will be in the resulting object
+
+		var buttonsParserFn = CreateEventButtonsParser(buttonsICareAbout)
+		state.buttons = buttonsParserFn(0) // inital values
+
+
+		var elm = document.getElementById("thingy")
+
+		elm.addEventListener("mousedown", updateButtons)
+		elm.addEventListener("mouseup", updateButtons)
+		elm.addEventListener("mouseenter", updateButtons)
+		elm.addEventListener("mouseleave", updateButtons)
+		elm.addEventListener("mousemove", updateButtons)
+
+		function updateButtons(event){
+			state.buttons = buttonsParserFn(event.buttons)
+		}
+
+		function heartbeat(timestamp){
+
+			if(state.buttons.Left){
+				console.log("Left button is pressed!")
+			}
+			if(state.buttons.RIGHT){
+				console.log("Right button is pressed!")
+			}
+			// the following properties are automatically part of the state returned
+			if(state.buttons.count == 2){
+				// note, this will reach a maximum of the length of button names you provide in the array.
+				console.log("THERE ARE TWO BUTTONS PRESSED!!")
+			}
+			// if(state.buttons.any){ // inlc
+			// 	console.log("Any button is pressed!")
+			// }
+			if(state.buttons.none){
+				// console.log("No button is pressed!")
+			}
+
+			requestAnimationFrame(heartbeat)
+		}
+		requestAnimationFrame(heartbeat)
+
+	</script>
+</body>
+</html>
