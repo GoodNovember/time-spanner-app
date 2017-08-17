@@ -5,8 +5,8 @@
 		.module('app')
 		.factory('timelineFactory', Service);
 
-	Service.inject = ['$q'];
-	function Service($q) {
+	Service.inject = ['$q', "geometryFactory"];
+	function Service($q, geometryFactory) {
 
 		var SPEED = .5;
 
@@ -15,12 +15,13 @@
 		var LOCAL_STATE = {
 			y:200,
 			x:200,
-			activePoint: new Point(200, 200)
+			activePoint: new geometryFactory.Point(200, 200),
+			activeRegions: [],
 		}
 
 		var REGIONS = [
-			new Region("bill", new Point(10,10), new Point(50, 150)),
-			new Region("joe", new Point(20,100), new Point(150, 250))
+			new Region("bill", new geometryFactory.Point(10,10), new geometryFactory.Point(50, 150)),
+			new Region("joe", new geometryFactory.Point(20,100), new geometryFactory.Point(150, 250))
 		]
 
 		var service = {
@@ -33,21 +34,27 @@
 		////////////////
 		function draw(MOVE, ctx, timestamp) { 
 
+			var movableRegion = "bill"
+
 			if(MOVE.mouseButtons.any || MOVE.isTouching){
 				if(MOVE.mouseButtons.any){
-					// LOCAL_STATE.y += MOVE.deltaY
-					// LOCAL_STATE.x += MOVE.deltaX
-					LOCAL_STATE.activePoint.adjust(MOVE.deltaX, MOVE.deltaY)
-				}else if(MOVE.isTouching){
-					LOCAL_STATE.activePoint.adjust(MOVE.touchDeltaX, MOVE.touchDeltaY)
-					// LOCAL_STATE.y += MOVE.touchDeltaY
-					// LOCAL_STATE.x += MOVE.touchDeltaX
+					LOCAL_STATE.activePoint.adjustByPoint(MOVE.mouseDelta)
 				}
-				// ANIMATIONS.push(new Anim(weirdAnim(new Point(ctx.canvas.width, LOCAL_STATE.y), new Point(0,LOCAL_STATE.y)), timestamp, 1000))
 			}
 
-			LOCAL_STATE.touchPoint = new Point(MOVE.touchX, MOVE.touchY)
-			LOCAL_STATE.mousePoint = new Point(MOVE.x, MOVE.y)
+			LOCAL_STATE.touchPoint = new geometryFactory.Point(MOVE.touchX, MOVE.touchY)
+			LOCAL_STATE.mousePoint = MOVE.mousePoint
+
+			if(MOVE.mouseButtons.left && LOCAL_STATE.activeRegions.length === 0){
+				LOCAL_STATE.activeRegions = getIncludedRegions(LOCAL_STATE.mousePoint)
+			}
+			if(MOVE.mouseButtons.left === false){
+				LOCAL_STATE.activeRegions = []
+			}
+
+			LOCAL_STATE.activeRegions.map(function(region){
+				region.adjustByPoint(MOVE.mouseDelta)
+			})
 
 			clear(ctx)
 
@@ -68,14 +75,8 @@
 			REGIONS.map(function(region){ 
 				var color = "black"
 
-				// if(LOCAL_STATE.mousePoint.isInRegion(region.name) && MOVE.mouseButtons.any){
-				// 	color = "red"
-				// }
-
 				if(region.isPointInRegion(LOCAL_STATE.activePoint)){
 					color = "red"
-				}else if (region.isPointInRegion(LOCAL_STATE.touchPoint) && MOVE.isTouching){
-					color = "green"
 				}else if (region.isPointInRegion(LOCAL_STATE.mousePoint) && MOVE.mouseButtons.any){
 					color = "pink"
 				}else if (region.isPointInRegion(LOCAL_STATE.mousePoint)){
@@ -105,65 +106,88 @@
 			self.duration = duration
 			self.endTime = self.startTime + duration
 			self.play = function(ctx, timestamp){
-				// var progress = self.endPoint / timestamp
 				var progress = (timestamp - self.startTime) / self.duration
-				// console.log(progress, self.endTime, duration, timestamp)
 				drawFn(ctx, progress)
 			}
 		}
 
-		function Region(name, topLeftPoint, bottomRightPoint){
+		function Region(name, pointA, pointB){
 			var self = this;
 
 			self.name = name;
 
-			var minX = topLeftPoint.x
-			var maxX = bottomRightPoint.x
+			var pA = pointA.clone()
+			var pB = pointB.clone()
 
-			var minY = topLeftPoint.y
-			var maxY = bottomRightPoint.y
+			function getMinX(){
+				return Math.min(pA.x, pB.x)
+			}
 
-			var topRightPoint = new Point(maxX, minY)
-			var bottomLeftPoint = new Point(minX, maxY)
+			function getMaxX(){
+				return Math.max(pA.x, pB.x)
+			}
+
+			function getMinY(){
+				return Math.min(pA.y, pB.y)
+			}
+
+			function getMaxY(){
+				return Math.max(pA.y, pB.y)
+			}
 
 			self.isPointInRegion = function(point){
-				var xP = point.x
-				var yP = point.y
+				var pX = point.x
+				var pY = point.y
 
-				var validX = (xP >= minX && xP <= maxX)
-				var validY = (yP >= minY && yP <= maxY)
+				var isValidX = (pX >= getMinX() && pX <= getMaxX())
+				var isValidY = (pY >= getMinY() && pY <= getMaxY())
 
-				return (validX && validY)
+				return (isValidX && isValidY)
 			}
 
 			self.drawRegion = function(ctx, color){
-				drawSimplePath(ctx, [topLeftPoint, topRightPoint, bottomRightPoint, bottomLeftPoint, topLeftPoint], color)
+
+				var minX = getMinX()
+				var minY = getMinY()
+
+				var maxX = getMaxX()
+				var maxY = getMaxY()
+
+				var topLeft = new geometryFactory.Point(minX, minY)
+				var topRight = new geometryFactory.Point(maxX, minY)
+				var bottomLeft = new geometryFactory.Point(minX, maxY)
+				var bottomRight = new geometryFactory.Point(maxX, maxY)
+
+				drawSimplePath(ctx, [topLeft, topRight, bottomRight, bottomLeft, topLeft], color)
+			}
+
+			self.adjust = function(x,y){
+				pA.adjust(x,y)
+				pB.adjust(x,y)
+			}
+			self.adjustByPoint = function(otherPoint){
+				pA.adjustByPoint(otherPoint)
+				pB.adjustByPoint(otherPoint)
 			}
 		}
 
-		function Point(x,y){
-			var self = this;
-			self.x = x
-			self.y = y
+		function isPointInRegion(point, regionName){
+			var region = getRegionByName(regionName)
 
-			self.adjust = function(modX, modY){
-				self.x += modX
-				self.y += modY
+			if(region && region.isPointInRegion(point.clone())){
+				return true
+			}else{
+				return false
 			}
+		}
 
-			self.clone = function(){
-				return new Point(this.x, this.y)
-			}
-
-			self.isInRegion = function(regionName){
-				const askedForRegion = getRegionByName(regionName)
-				// console.log("REGION:", regionName, askedForRegion)
-				if(askedForRegion && askedForRegion.isPointInRegion(self.clone())){
-					return true
-				}else{
-					return false
+		function getIncludedRegions(point){
+			return REGIONS.reduce(function(acc, region){
+				if(region.isPointInRegion(point.clone())){
+					acc.push(region)
 				}
-			}
+				return acc
+			},[])
 		}
 
 		function getRegionByName(regionName){
