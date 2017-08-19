@@ -11,8 +11,8 @@
 		var buttonHandler = makeButtonHandler(["left", "right", "middle", "fourth", "fifth"])
 
 		var MOVE_STATE = {
-			mousePoint: geometryFactory.PointZero.clone(),
-			lastMousePoint: geometryFactory.PointZero.clone(),
+			mousePoint: new geometryFactory.Point(0,0),
+			lastMousePoint: new geometryFactory.Point(0,0),
 			mouseButtons: buttonHandler(0),
 			activePoints:{},
 			isMouseActive:false,
@@ -29,8 +29,6 @@
 
 		////////////////
 		function bindTo(element) { 
-
-			
 
 			var bindings = {
 				"mouseenter":onMouseEnter,
@@ -175,7 +173,7 @@
 			MOVE_STATE.mouseDelta = MOVE_STATE.mousePoint.getDifference(MOVE_STATE.lastMousePoint)
 			MOVE_STATE.lastMousePoint = MOVE_STATE.mousePoint.clone()
 
-			if(MOVE_STATE.mouseDelta.isEqualTo(geometryFactory.PointZero) == false){
+			if(MOVE_STATE.mouseDelta.isZero() == false){
 				MOVE_STATE.isMoving = true
 			}else{
 				MOVE_STATE.isMoving = false

@@ -10,8 +10,8 @@
 			templateUrl:"./app/components/tispTimeline/tispTimeline.html"
 		});//end component
 
-	tispTimelineCtrl.$inject = ["$element", "timelineFactory", "movementFactory", "$scope"];
-	function tispTimelineCtrl($element, timelineFactory, mvt, $scope){
+	tispTimelineCtrl.$inject = ["$element", "timelineFactory", "movementFactory","geometryFactory", "$scope"];
+	function tispTimelineCtrl($element, timelineFactory, mvt, geometryFactory, $scope){
 		var $ctrl = this;
 		
 		var dpr = window.devicePixelRatio || 1
@@ -45,7 +45,7 @@
 				sized = sizeCanvas($ctrl.ctx)
 			}
 
-			draw(timestamp)
+			draw(timestamp, sized)
 
 			mvt.update(timestamp)
 
@@ -54,8 +54,16 @@
 			}
 		} // end heartbeat
 		
-		function draw(timestamp){
-			timelineFactory.draw(mvt.getState(), $ctrl.ctx, timestamp)
+		function draw(timestamp, sized){
+
+			var dpr = window.devicePixelRatio || 1
+
+			var VIEWPORT = {
+				wasSized:sized,
+				maxPoint:new geometryFactory.Point($ctrl.ctx.canvas.width * dpr, $ctrl.ctx.canvas.height * dpr)
+			}
+
+			timelineFactory.draw(mvt.getState(), VIEWPORT, $ctrl.ctx, timestamp)
 		}
 
 		function sizeCanvas(ctx){
